@@ -20,7 +20,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 60
     env:
-      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || secrets.SONAR_HOST_URL || 'http://localhost:9000' }}
 
     steps:
       - name: Checkout
@@ -29,16 +29,18 @@ jobs:
           persist-credentials: false
 
       - name: Check SonarQube settings
-        shell: powershell
+        shell: cmd
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:SONAR_HOST_URL)) {
-            throw 'Create the repository variable SONAR_HOST_URL (for this laptop: http://localhost:9000).'
-          }
-          if ([string]::IsNullOrWhiteSpace($env:SONAR_TOKEN)) {
-            throw 'Create the repository secret SONAR_TOKEN with an analysis token for this SonarQube project.'
-          }
+          if not defined SONAR_HOST_URL (
+            echo Create repository variable SONAR_HOST_URL, for example http://localhost:9000.
+            exit /b 1
+          )
+          if not defined SONAR_TOKEN (
+            echo Create repository secret SONAR_TOKEN with a project analysis token.
+            exit /b 1
+          )
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -54,20 +56,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Backend tests and JaCoCo coverage
-        shell: powershell
+        shell: cmd
+        env:
+          JWT_SECRET: ci-test-only-key-not-for-deployment-0123456789abcd
         run: |
-          $bytes = New-Object byte[] 48
-          $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-          try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-          $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
-          Push-Location backend
-          try {
-            .\mvnw.cmd -B -ntp verify
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
-          finally {
-            Pop-Location
-          }
+          cd backend
+          call mvnw.cmd -B -ntp verify
+          if errorlevel 1 exit /b %ERRORLEVEL%
 
       - name: Install frontend dependencies
         working-directory: frontend

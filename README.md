@@ -18,7 +18,7 @@ El workflow no se ejecuta en `pull_request`: este es un repositorio público y e
 1. En SonarQube, crea un proyecto manual con la clave `calidad-sonarqube` y genera un token de análisis para ese proyecto.
 2. En **Settings → Secrets and variables → Actions**, agrega:
    - Secret `SONAR_TOKEN`: el token de análisis. No lo guardes en el repositorio ni lo compartas.
-   - Variable `SONAR_HOST_URL`: `http://localhost:9000` si SonarQube y el runner están en esta misma laptop.
+   - `SONAR_HOST_URL` es opcional cuando el servidor está en la misma laptop; el workflow usa `http://localhost:9000` por defecto. Si tu servidor está en otra dirección, define la variable con esa URL.
 3. En **Settings → Actions → Runners**, añade un runner autoalojado **Windows x64** y configúralo en la laptop. Ejecuta `run.cmd` para mantenerlo escuchando mientras se prueba.
 4. Mantén iniciados Docker Desktop y SonarQube, y asegúrate de que Chrome esté instalado.
 5. Ejecuta el workflow manualmente desde la pestaña **Actions** o haz push a `main`.
