@@ -1,0 +1,19 @@
+# Build outputs and dependency caches
+**/target/
+**/node_modules/
+**/dist/
+**/coverage/
+**/.angular/
+**/.sonar/
+
+# Local environment files and IDE data
+.env
+**/.env
+.env.sonar
+**/.env.sonar
+!.env.example
+**/.idea/
+**/*.iml
+Thumbs.db
+.DS_Store
+*.log
