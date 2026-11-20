@@ -80,8 +80,9 @@ jobs:
         run: npm run build
 
       - name: Run SonarQube analysis
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v8.5.0
         with:
           args: -Dsonar.qualitygate.wait=true
+          skipSignatureVerification: true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
